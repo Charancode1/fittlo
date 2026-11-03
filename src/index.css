@@ -1,0 +1,860 @@
+/* ==========================================================================
+   Fittlo — Modern Fitness Consistency Tracker
+   Theme: Deep Charcoal, Electric Orange, Warm Amber & Gold
+   ========================================================================== */
+
+:root {
+  /* Color Palette */
+  --bg-app: #0b0c10;
+  --bg-card: #13151b;
+  --bg-card-subtle: #171a23;
+  --bg-hover: #1e222f;
+
+  /* Text Colors */
+  --text-primary: #f5f6f8;
+  --text-secondary: #9499a8;
+  --text-muted: #5e6473;
+  --text-dark: #0b0c10;
+
+  /* Borders & Dividers */
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-card: rgba(255, 255, 255, 0.1);
+  --border-glow: rgba(255, 107, 53, 0.35);
+
+  /* Fitness Orange / Warm Gold Heatmap Spectrum */
+  --orange-primary: #ff5722;
+  --orange-light: #ff6b35;
+  --orange-vibrant: #ff7a00;
+  --amber-warm: #ff9100;
+  --gold-warm: #ffb300;
+
+  /* Heatmap Cell Levels */
+  --cell-inactive: #1a1d27;
+  --cell-inactive-border: rgba(255, 255, 255, 0.04);
+  --cell-level-1: #d84315; /* Subtle deep warm orange */
+  --cell-level-2: #ff5722; /* Energetic electric orange */
+  --cell-level-3: #ff8f00; /* Radiant amber */
+  --cell-level-4: #ffb300; /* Luminous warm gold */
+
+  /* Typography */
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Shadows */
+  --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.6), 0 0 1px rgba(255, 255, 255, 0.1);
+  --shadow-btn-glow: 0 8px 24px -4px rgba(255, 87, 34, 0.45);
+  --shadow-cell-glow: 0 0 12px rgba(255, 122, 0, 0.6);
+}
+
+/* Global Reset & Base */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  min-height: 100vh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  background-image:
+    radial-gradient(ellipse at 50% -20%, rgba(255, 87, 34, 0.09) 0%, transparent 65%),
+    radial-gradient(ellipse at 85% 100%, rgba(255, 145, 0, 0.04) 0%, transparent 50%);
+}
+
+button {
+  font-family: inherit;
+  border: none;
+  background: none;
+  cursor: pointer;
+  outline: none;
+}
+
+/* ==========================================================================
+   Shell & Layout
+   ========================================================================== */
+
+.fittlo-app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2.5rem 1.5rem;
+}
+
+.fittlo-container {
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* ==========================================================================
+   Header & Branding
+   ========================================================================== */
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.brand-logo {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ff5722 0%, #ff8f00 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(255, 87, 34, 0.4);
+}
+
+.brand-icon {
+  width: 24px;
+  height: 24px;
+  stroke: #ffffff;
+}
+
+.brand-text-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+
+.brand-tag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--orange-light);
+}
+
+.header-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 9999px;
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-subtle);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--orange-light);
+  box-shadow: 0 0 8px var(--orange-light);
+  animation: pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+/* ==========================================================================
+   Main Content
+   ========================================================================== */
+
+.main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2.25rem;
+}
+
+/* ==========================================================================
+   Primary Workout Action Button
+   ========================================================================== */
+
+.action-button-section {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.primary-workout-btn {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  padding: 1.15rem 1.75rem;
+  border-radius: 16px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  text-align: left;
+  user-select: none;
+}
+
+/* Pending / Incomplete State (Electric Orange Call to Action) */
+.primary-workout-btn.pending {
+  background: linear-gradient(135deg, #ff5722 0%, #ff7a00 100%);
+  box-shadow: var(--shadow-btn-glow), 0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+  color: #ffffff;
+}
+
+.primary-workout-btn.pending:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px -4px rgba(255, 87, 34, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.25) inset;
+}
+
+.primary-workout-btn.pending:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+/* Completed State (Rewarding Charcoal & Warm Gold Tone) */
+.primary-workout-btn.completed {
+  background: linear-gradient(135deg, #181c25 0%, #1e2330 100%);
+  border: 1px solid rgba(255, 179, 0, 0.4);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 18px rgba(255, 179, 0, 0.15);
+  color: var(--text-primary);
+}
+
+.primary-workout-btn.completed:hover {
+  background: linear-gradient(135deg, #1e2330 0%, #252c3c 100%);
+  border-color: rgba(255, 179, 0, 0.7);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 24px rgba(255, 179, 0, 0.25);
+  transform: translateY(-2px);
+}
+
+.primary-workout-btn.completed:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+.btn-content {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.btn-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.25s ease;
+}
+
+.pending .btn-icon-wrapper {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+.completed .btn-icon-wrapper {
+  background: linear-gradient(135deg, rgba(255, 179, 0, 0.2) 0%, rgba(255, 87, 34, 0.2) 100%);
+  color: var(--gold-warm);
+  border: 1px solid rgba(255, 179, 0, 0.3);
+}
+
+.btn-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.btn-text-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.btn-primary-text {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.btn-secondary-text {
+  font-size: 0.82rem;
+  margin-top: 0.25rem;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.pending .btn-secondary-text {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.completed .btn-secondary-text {
+  color: var(--text-secondary);
+}
+
+/* ==========================================================================
+   GitHub-Style Workout Heatmap Card
+   ========================================================================== */
+
+.heatmap-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: 18px;
+  padding: 1.75rem 1.5rem;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  position: relative;
+}
+
+.heatmap-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.heatmap-title-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.heatmap-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+.heatmap-subtitle {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+/* Legend */
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.legend-text {
+  margin: 0 0.2rem;
+}
+
+.legend-cell {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+/* Heatmap Grid & Scroll Container */
+.heatmap-scroll-container {
+  width: 100%;
+  overflow-x: auto;
+  padding-bottom: 0.75rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Custom subtle dark scrollbar */
+.heatmap-scroll-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.heatmap-scroll-container::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 9999px;
+}
+
+.heatmap-scroll-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+}
+
+.heatmap-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 87, 34, 0.4);
+}
+
+.heatmap-inner-wrapper {
+  display: inline-flex;
+  flex-direction: column;
+  min-width: max-content;
+  gap: 0.4rem;
+}
+
+/* Month labels header row */
+.month-labels-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+
+.weekday-spacer {
+  width: 28px;
+  flex-shrink: 0;
+}
+
+.month-labels-grid {
+  display: grid;
+  grid-template-columns: repeat(53, 14px);
+  column-gap: 4px;
+}
+
+.month-label {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Main Heatmap Grid */
+.grid-with-weekdays {
+  display: flex;
+  gap: 0;
+}
+
+.weekday-labels-col {
+  display: grid;
+  grid-template-rows: repeat(7, 14px);
+  row-gap: 4px;
+  width: 28px;
+  flex-shrink: 0;
+}
+
+.weekday-label-slot {
+  display: flex;
+  align-items: center;
+  height: 14px;
+}
+
+.weekday-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  user-select: none;
+}
+
+.weeks-container {
+  display: grid;
+  grid-template-columns: repeat(53, 14px);
+  column-gap: 4px;
+}
+
+.week-column {
+  display: grid;
+  grid-template-rows: repeat(7, 14px);
+  row-gap: 4px;
+}
+
+/* Individual Cell Styling */
+.calendar-cell {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  position: relative;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.calendar-cell.empty {
+  visibility: hidden;
+}
+
+/* Inactive (Rest Day) */
+.calendar-cell.level-0,
+.legend-cell.level-0 {
+  background-color: var(--cell-inactive);
+  border: 1px solid var(--cell-inactive-border);
+}
+
+/* Completed Workout Levels (Warm energetic orange to gold) */
+.calendar-cell.level-1,
+.legend-cell.level-1 {
+  background-color: var(--cell-level-1);
+}
+
+.calendar-cell.level-2,
+.legend-cell.level-2 {
+  background-color: var(--cell-level-2);
+}
+
+.calendar-cell.level-3,
+.legend-cell.level-3 {
+  background-color: var(--cell-level-3);
+  box-shadow: 0 0 6px rgba(255, 143, 0, 0.35);
+}
+
+.calendar-cell.level-4,
+.legend-cell.level-4 {
+  background-color: var(--cell-level-4);
+  box-shadow: 0 0 8px rgba(255, 179, 0, 0.55);
+}
+
+/* Hover and Focus States */
+.calendar-cell:not(.future-cell):hover,
+.calendar-cell:not(.future-cell):focus-visible {
+  transform: scale(1.35);
+  z-index: 20;
+  border-color: rgba(255, 255, 255, 0.8) !important;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+/* Future Day Styling */
+.calendar-cell.future-cell {
+  background-color: rgba(255, 255, 255, 0.02);
+  border: 1px dashed rgba(255, 255, 255, 0.06);
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+/* Today Cell Highlight */
+.calendar-cell.today-cell {
+  border: 1.5px solid #ffffff !important;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.7);
+}
+
+.today-indicator-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  display: block;
+}
+
+/* ==========================================================================
+   Floating Tooltip
+   ========================================================================== */
+
+.heatmap-tooltip {
+  position: fixed;
+  transform: translate(-50%, -100%);
+  background-color: rgba(18, 20, 27, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 0.65rem 0.85rem;
+  box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+  z-index: 100;
+  min-width: 170px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  animation: tooltip-fade 0.15s ease-out;
+}
+
+@keyframes tooltip-fade {
+  from { opacity: 0; transform: translate(-50%, -92%); }
+  to { opacity: 1; transform: translate(-50%, -100%); }
+}
+
+.tooltip-date {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.tooltip-day-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  background-color: rgba(255, 87, 34, 0.15);
+  color: var(--orange-light);
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+}
+
+.tooltip-full-date {
+  font-size: 0.78rem;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.tooltip-status {
+  display: flex;
+  align-items: center;
+  font-size: 0.76rem;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 0.4rem;
+}
+
+.completed-dot {
+  background-color: var(--orange-light);
+  box-shadow: 0 0 6px var(--orange-light);
+}
+
+.rest-dot {
+  background-color: var(--text-muted);
+}
+
+.status-text.completed {
+  color: var(--orange-light);
+  font-weight: 600;
+}
+
+.status-text.rest {
+  color: var(--text-secondary);
+}
+
+.status-text.future {
+  color: var(--text-muted);
+}
+
+.tooltip-hint {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 0.3rem;
+  margin-top: 0.15rem;
+}
+
+/* ==========================================================================
+   Basic Statistics Cards (Minimal & Secondary)
+   ========================================================================== */
+
+.stats-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.stat-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: 14px;
+  padding: 1.15rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.stat-card:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+  transform: translateY(-1px);
+}
+
+.stat-card-highlight {
+  border-color: rgba(255, 87, 34, 0.25);
+  background: linear-gradient(180deg, rgba(255, 87, 34, 0.04) 0%, var(--bg-card) 100%);
+}
+
+.stat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stat-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+}
+
+.stat-icon {
+  width: 17px;
+  height: 17px;
+  color: var(--text-muted);
+}
+
+.flame-icon {
+  color: var(--orange-light);
+}
+
+.trophy-icon {
+  color: var(--gold-warm);
+}
+
+.stat-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+
+.stat-value {
+  font-family: var(--font-mono);
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.stat-value.highlight-streak {
+  color: var(--orange-light);
+}
+
+.stat-unit {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+
+.app-footer {
+  text-align: center;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.footer-tagline {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  letter-spacing: 0.01em;
+}
+
+/* ==========================================================================
+   Toast Notification Banner
+   ========================================================================== */
+
+.toast-banner {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  max-width: 380px;
+  background-color: rgba(20, 22, 30, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 0.9rem 1.15rem;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 999;
+  animation: slide-up 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.toast-banner.toast-success {
+  border-left: 3px solid var(--orange-light);
+}
+
+.toast-banner.toast-undo {
+  border-left: 3px solid var(--text-secondary);
+}
+
+.toast-icon-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toast-icon {
+  width: 22px;
+  height: 22px;
+}
+
+.toast-success .toast-icon {
+  color: var(--orange-light);
+}
+
+.toast-undo .toast-icon {
+  color: var(--text-secondary);
+}
+
+.toast-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.toast-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.toast-desc {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.toast-close-btn {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: color 0.15s ease;
+}
+
+.toast-close-btn:hover {
+  color: var(--text-primary);
+}
+
+/* ==========================================================================
+   Responsive Adaptations
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .fittlo-app-shell {
+    padding: 1.5rem 1rem;
+  }
+
+  .stats-container {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .stat-card {
+    padding: 0.95rem 1.1rem;
+  }
+
+  .heatmap-card {
+    padding: 1.25rem 1rem;
+  }
+
+  .toast-banner {
+    left: 1rem;
+    right: 1rem;
+    bottom: 1.25rem;
+    max-width: calc(100% - 2rem);
+  }
+}
+
