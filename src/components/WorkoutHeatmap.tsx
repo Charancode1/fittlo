@@ -6,6 +6,9 @@ interface WorkoutHeatmapProps {
   weeks: HeatmapWeek[];
   monthLabels: MonthLabel[];
   todayStr: string;
+  selectedDate: string;
+  completedDatesSet: Set<string>;
+  onSelectDate: (dateStr: string) => void;
   onToggleDate: (dateStr: string) => void;
 }
 
@@ -21,10 +24,13 @@ export const WorkoutHeatmap: React.FC<WorkoutHeatmapProps> = ({
   weeks,
   monthLabels,
   todayStr,
+  selectedDate,
+  completedDatesSet,
+  onSelectDate,
   onToggleDate
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [activeDay, setActiveDay] = useState<WorkoutDay | null>(null);
+  const [justToggledDate, setJustToggledDate] = useState<string | null>(null);
   const [tooltip, setTooltip] = useState<TooltipState>({
     visible: false,
     x: 0,
@@ -32,23 +38,6 @@ export const WorkoutHeatmap: React.FC<WorkoutHeatmapProps> = ({
     placement: 'top',
     day: null
   });
-
-  // Find today's day object for initial inspector state
-  const todayDay = useMemo(() => {
-    for (const week of weeks) {
-      for (const d of week) {
-        if (d && d.date === todayStr) return d;
-      }
-    }
-    return null;
-  }, [weeks, todayStr]);
-
-  // Set active day to today on mount or when todayDay changes
-  useEffect(() => {
-    if (todayDay && !activeDay) {
-      setActiveDay(todayDay);
-    }
-  }, [todayDay, activeDay]);
 
   // Automatically position calendar at the most recent week on mount
   useEffect(() => {
@@ -62,7 +51,7 @@ export const WorkoutHeatmap: React.FC<WorkoutHeatmapProps> = ({
     // Immediate positioning
     scrollToMostRecent();
 
-    // Secondary pass to guarantee alignment after layout/fonts stabilize
+    // Secondary frame execution after styles/fonts stabilize
     const rafId = requestAnimationFrame(() => {
       scrollToMostRecent();
     });
@@ -130,7 +119,6 @@ export const WorkoutHeatmap: React.FC<WorkoutHeatmapProps> = ({
     const y = fitsAbove ? rect.top - 8 : rect.bottom + 8;
     const placement = fitsAbove ? 'top' : 'bottom';
 
-    setActiveDay(day);
     setTooltip({
       visible: true,
       x: clampedX,
@@ -140,27 +128,27 @@ export const WorkoutHeatmap: React.FC<WorkoutHeatmapProps> = ({
     });
   };
 
-  const handleCellClick = (day: WorkoutDay, e?: React.MouseEvent<HTMLButtonElement>) => {
+  const handleCellClick = (day: WorkoutDay) => {
     if (day.isFuture) return;
+
+    onSelectDate(day.date);
     onToggleDate(day.date);
 
-    const toggledDay: WorkoutDay = {
-      ...day,
-      isCompleted: !day.isCompleted
-    };
+    // Trigger subtle tactile feedback animation
+    setJustToggledDate(day.date);
+    setTimeout(() => {
+      setJustToggledDate(curr => (curr === day.date ? null : curr));
+    }, 300);
 
-    setActiveDay(toggledDay);
-
-    // If target button exists, update tooltip position & content
-    if (e && e.currentTarget) {
-      updateTooltip(toggledDay, e.currentTarget);
-    } else {
-      setTooltip(prev =>
-        prev.day?.date === day.date
-          ? { ...prev, day: toggledDay }
-          : prev
-      );
-    }
+    // Update tooltip preview if currently visible
+    setTooltip(prev =>
+      prev.visible && prev.day?.date === day.date
+        ? {
+            ...prev,
+            day: { ...day, isCompleted: !day.isCompleted }
+          }
+        : prev
+    );
   };
 
   const handleMouseEnter = (day: WorkoutDay, e: React.MouseEvent<HTMLButtonElement>) => {
@@ -172,6 +160,7 @@ export const WorkoutHeatmap: React.FC<WorkoutHeatmapProps> = ({
   };
 
   const scrollToToday = () => {
+    onSelectDate(todayStr);
     if (scrollContainerRef.current) {
       const el = scrollContainerRef.current;
       el.scrollTo({
@@ -180,6 +169,10 @@ export const WorkoutHeatmap: React.FC<WorkoutHeatmapProps> = ({
       });
     }
   };
+
+  // Synchronized status of the currently selected date
+  const isSelectedCompleted = completedDatesSet.has(selectedDate);
+  const isSelectedToday = selectedDate === todayStr;
 
   const weekdayLabels = [
     { label: '', index: 0 },   // Sun
@@ -251,6 +244,8 @@ export const WorkoutHeatmap: React.FC<WorkoutHeatmapProps> = ({
 
                       const level = getDayShadeLevel(day, weekIdx);
                       const isToday = day.date === todayStr;
+                      const isSelected = day.date === selectedDate;
+                      const isJustToggled = day.date === justToggledDate;
 
                       return (
                         <button
@@ -261,21 +256,25 @@ export const WorkoutHeatmap: React.FC<WorkoutHeatmapProps> = ({
                           tabIndex={day.isFuture ? -1 : 0}
                           className={`calendar-cell level-${level} ${
                             day.isCompleted ? 'completed' : 'inactive'
-                          } ${isToday ? 'today-cell' : ''} ${day.isFuture ? 'future-cell' : ''}`}
-                          onClick={e => handleCellClick(day, e)}
+                          } ${isToday ? 'today-cell' : ''} ${
+                            isSelected ? 'selected-cell' : ''
+                          } ${isJustToggled ? 'cell-just-toggled' : ''} ${
+                            day.isFuture ? 'future-cell' : ''
+                          }`}
+                          onClick={e => {
+                            e.stopPropagation();
+                            handleCellClick(day);
+                          }}
                           onMouseEnter={e => handleMouseEnter(day, e)}
                           onMouseLeave={handleMouseLeave}
                           onFocus={e => handleMouseEnter(day, e as unknown as React.MouseEvent<HTMLButtonElement>)}
                           onBlur={handleMouseLeave}
-                          onKeyDown={e => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault();
-                              handleCellClick(day);
-                            }
-                          }}
                           aria-label={`${formatFriendlyDate(day.date)}: ${
                             day.isCompleted ? 'Workout completed' : 'No workout'
-                          }${isToday ? ' (Today)' : ''}${day.isFuture ? ' (Future)' : ''}`}
+                          }${isToday ? ' (Today)' : ''}${isSelected ? ' (Selected)' : ''}${
+                            day.isFuture ? ' (Future)' : ''
+                          }`}
+                          aria-pressed={day.isCompleted}
                         >
                           {isToday && (
                             <span className="today-beacon" aria-hidden="true">
@@ -293,42 +292,38 @@ export const WorkoutHeatmap: React.FC<WorkoutHeatmapProps> = ({
         </div>
       </div>
 
-      {/* Footer bar with active day info and jump to today button */}
+      {/* Footer bar with synchronized selected day inspector */}
       <div className="heatmap-footer-bar">
-        <div className="active-day-inspector">
+        <div className="active-day-inspector" aria-live="polite">
           <span
             className={`inspector-indicator ${
-              activeDay?.isCompleted ? 'active-completed' : 'active-rest'
+              isSelectedCompleted ? 'active-completed' : 'active-rest'
             }`}
             aria-hidden="true"
           />
           <div className="inspector-content">
             <span className="inspector-date">
-              {activeDay ? getRelativeDateTitle(activeDay.date) : 'Today'}
-              {activeDay ? ` • ${formatFriendlyDate(activeDay.date)}` : ''}
+              {getRelativeDateTitle(selectedDate, todayStr)} • {formatFriendlyDate(selectedDate)}
             </span>
             <span className="inspector-status">
-              {activeDay?.isFuture
-                ? 'Upcoming day'
-                : activeDay?.isCompleted
-                ? 'Workout completed 🔥'
-                : 'Rest day / No workout'}
+              {isSelectedCompleted ? 'Workout completed' : 'Rest day / No workout'}
             </span>
           </div>
         </div>
 
         <button
           type="button"
-          className="jump-today-btn"
+          className={`jump-today-btn ${isSelectedToday ? 'is-active-today' : ''}`}
           onClick={scrollToToday}
-          title="Scroll to Today"
+          title="Select Today and jump to current week"
+          aria-label="Select Today and scroll to current week"
         >
           <span className="jump-today-dot" aria-hidden="true" />
-          <span>Current Week</span>
+          <span>Today</span>
         </button>
       </div>
 
-      {/* Smart Viewport-Clamped Floating Tooltip */}
+      {/* Smart Viewport-Clamped Floating Tooltip (Preview on Hover/Focus) */}
       {tooltip.visible && tooltip.day && (
         <div
           className={`heatmap-tooltip ${
@@ -343,7 +338,7 @@ export const WorkoutHeatmap: React.FC<WorkoutHeatmapProps> = ({
         >
           <div className="tooltip-date">
             <span className="tooltip-day-badge">
-              {getRelativeDateTitle(tooltip.day.date)}
+              {getRelativeDateTitle(tooltip.day.date, todayStr)}
             </span>
             <span className="tooltip-full-date">
               {formatFriendlyDate(tooltip.day.date)}

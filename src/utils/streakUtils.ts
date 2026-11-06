@@ -17,9 +17,14 @@ function areConsecutiveDays(dateAStr: string, dateBStr: string): boolean {
 /**
  * Calculates total workouts, current streak, and longest streak
  */
-export function calculateStreakStats(datesList: string[]): StreakStats {
+export function calculateStreakStats(
+  datesList: string[],
+  referenceTodayStr?: string
+): StreakStats {
   const validDateRegex = /^\d{4}-\d{2}-\d{2}$/;
-  const uniqueDates = Array.from(new Set(datesList.filter(d => Boolean(d && validDateRegex.test(d)))));
+  const uniqueDates = Array.from(
+    new Set(datesList.filter(d => Boolean(d && validDateRegex.test(d))))
+  );
 
   if (uniqueDates.length === 0) {
     return {
@@ -32,13 +37,16 @@ export function calculateStreakStats(datesList: string[]): StreakStats {
   // Sort ascending
   uniqueDates.sort();
 
-  const datesSet = new Set(uniqueDates);
-  const today = new Date();
-  const todayStr = formatLocalDate(today);
+  const todayStr = referenceTodayStr || formatLocalDate(new Date());
+  const today = parseLocalDate(todayStr);
 
   const yesterday = new Date(today);
   yesterday.setDate(today.getDate() - 1);
   const yesterdayStr = formatLocalDate(yesterday);
+
+  // Eligible dates for streak calculation should be on or before today
+  const historicalDates = uniqueDates.filter(d => d <= todayStr);
+  const datesSet = new Set(historicalDates);
 
   // 1. Calculate Current Streak
   let currentStreak = 0;
@@ -70,17 +78,20 @@ export function calculateStreakStats(datesList: string[]): StreakStats {
   }
 
   // 2. Calculate Longest Streak
-  let longestStreak = 1;
-  let tempStreak = 1;
+  let longestStreak = 0;
+  if (historicalDates.length > 0) {
+    longestStreak = 1;
+    let tempStreak = 1;
 
-  for (let i = 1; i < uniqueDates.length; i++) {
-    if (areConsecutiveDays(uniqueDates[i - 1], uniqueDates[i])) {
-      tempStreak++;
-    } else {
-      tempStreak = 1;
-    }
-    if (tempStreak > longestStreak) {
-      longestStreak = tempStreak;
+    for (let i = 1; i < historicalDates.length; i++) {
+      if (areConsecutiveDays(historicalDates[i - 1], historicalDates[i])) {
+        tempStreak++;
+      } else {
+        tempStreak = 1;
+      }
+      if (tempStreak > longestStreak) {
+        longestStreak = tempStreak;
+      }
     }
   }
 

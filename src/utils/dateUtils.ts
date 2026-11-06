@@ -11,15 +11,16 @@ export function formatLocalDate(date: Date): string {
 }
 
 /**
- * Parses YYYY-MM-DD string into a local Date
+ * Parses YYYY-MM-DD string into a local Date at noon (12:00:00)
+ * Setting to noon prevents DST/midnight timezone shifts from bleeding into adjacent days.
  */
 export function parseLocalDate(dateStr: string): Date {
   const [year, month, day] = dateStr.split('-').map(Number);
-  return new Date(year, month - 1, day);
+  return new Date(year, month - 1, day, 12, 0, 0);
 }
 
 /**
- * Returns formatted friendly date string (e.g. "Tuesday, November 3, 2026")
+ * Returns formatted friendly date string (e.g. "Wednesday, November 4, 2026")
  */
 export function formatFriendlyDate(dateStr: string): string {
   const date = parseLocalDate(dateStr);
@@ -32,18 +33,19 @@ export function formatFriendlyDate(dateStr: string): string {
 }
 
 /**
- * Returns short relative or friendly title (e.g. "Today", "Yesterday", "Nov 3")
+ * Returns short relative or friendly title (e.g. "Today", "Yesterday", "Nov 4")
  */
-export function getRelativeDateTitle(dateStr: string): string {
-  const todayStr = formatLocalDate(new Date());
+export function getRelativeDateTitle(dateStr: string, referenceTodayStr?: string): string {
+  const todayStr = referenceTodayStr || formatLocalDate(new Date());
   if (dateStr === todayStr) return 'Today';
 
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
+  const today = parseLocalDate(todayStr);
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
   if (dateStr === formatLocalDate(yesterday)) return 'Yesterday';
 
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
   if (dateStr === formatLocalDate(tomorrow)) return 'Tomorrow';
 
   const date = parseLocalDate(dateStr);
@@ -56,25 +58,26 @@ export function getRelativeDateTitle(dateStr: string): string {
 /**
  * Generates 53 weeks (approx. 12 months) of calendar data ending at the current week
  */
-export function generateHeatmapGrid(completedDates: Set<string>): {
+export function generateHeatmapGrid(
+  completedDates: Set<string>,
+  referenceTodayStr?: string
+): {
   weeks: HeatmapWeek[];
   monthLabels: MonthLabel[];
   todayStr: string;
 } {
-  const today = new Date();
-  const todayStr = formatLocalDate(today);
+  const todayStr = referenceTodayStr || formatLocalDate(new Date());
+  const today = parseLocalDate(todayStr);
 
   // Find the end date: the upcoming or current Saturday of this week
   const dayOfWeekToday = today.getDay(); // 0 is Sunday, 6 is Saturday
   const endSaturday = new Date(today);
   endSaturday.setDate(today.getDate() + (6 - dayOfWeekToday));
-  endSaturday.setHours(0, 0, 0, 0);
 
   // We want 53 columns total (371 days)
   const totalWeeks = 53;
   const startSunday = new Date(endSaturday);
   startSunday.setDate(endSaturday.getDate() - (totalWeeks * 7 - 1));
-  startSunday.setHours(0, 0, 0, 0);
 
   const weeks: HeatmapWeek[] = [];
   const currentIterDate = new Date(startSunday);
@@ -159,4 +162,3 @@ export function generateHeatmapGrid(completedDates: Set<string>): {
     todayStr
   };
 }
-

@@ -18,19 +18,23 @@ export function App() {
     setStoredWorkouts(workouts);
   }, [workouts]);
 
+  // Today reference using user's local calendar
   const todayStr = useMemo(() => formatLocalDate(new Date()), []);
   const todayFormatted = useMemo(() => formatFriendlyDate(todayStr), [todayStr]);
+
+  // Selected date defaults to today
+  const [selectedDate, setSelectedDate] = useState<string>(todayStr);
 
   const completedDatesSet = useMemo(() => new Set(workouts), [workouts]);
   const isTodayCompleted = completedDatesSet.has(todayStr);
 
-  const stats = useMemo(() => calculateStreakStats(workouts), [workouts]);
+  const stats = useMemo(() => calculateStreakStats(workouts, todayStr), [workouts, todayStr]);
 
   const calendarData = useMemo(() => {
-    return generateHeatmapGrid(completedDatesSet);
-  }, [completedDatesSet]);
+    return generateHeatmapGrid(completedDatesSet, todayStr);
+  }, [completedDatesSet, todayStr]);
 
-  // Show auto-dismissing toast
+  // Show auto-dismissing feedback toast
   const triggerToast = useCallback((msg: Omit<ToastMessage, 'id'>) => {
     const id = Date.now().toString();
     setToast({ ...msg, id });
@@ -40,12 +44,14 @@ export function App() {
     if (!toast) return;
     const timer = setTimeout(() => {
       setToast(null);
-    }, 3800);
+    }, 3200);
     return () => clearTimeout(timer);
   }, [toast]);
 
-  // Toggle specific date
+  // Toggle specific date and sync selection
   const toggleDate = useCallback((dateStr: string) => {
+    setSelectedDate(dateStr);
+
     setWorkouts(prev => {
       const set = new Set(prev);
       const isCurrentlyCompleted = set.has(dateStr);
@@ -72,6 +78,7 @@ export function App() {
   }, [todayStr, triggerToast]);
 
   const toggleToday = useCallback(() => {
+    setSelectedDate(todayStr);
     toggleDate(todayStr);
   }, [todayStr, toggleDate]);
 
@@ -94,6 +101,9 @@ export function App() {
             weeks={calendarData.weeks}
             monthLabels={calendarData.monthLabels}
             todayStr={todayStr}
+            selectedDate={selectedDate}
+            completedDatesSet={completedDatesSet}
+            onSelectDate={setSelectedDate}
             onToggleDate={toggleDate}
           />
 
@@ -116,4 +126,3 @@ export function App() {
 }
 
 export default App;
-
