@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useMemo, useCallback } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { HeatmapWeek, MonthLabel, WorkoutDay } from '../types';
 import { formatFriendlyDate, getRelativeDateTitle } from '../utils/dateUtils';
 
@@ -79,31 +79,10 @@ export const WorkoutHeatmap: React.FC<WorkoutHeatmapProps> = ({
     };
   }, []);
 
-  // Compute consistency level (1-4) for each completed day based on weekly consistency
-  const weekWorkoutCounts = useMemo(() => {
-    return weeks.map(week => {
-      return week.reduce((count, day) => {
-        return day && day.isCompleted ? count + 1 : count;
-      }, 0);
-    });
-  }, [weeks]);
-
-  const getDayShadeLevel = useCallback(
-    (day: WorkoutDay, weekIndex: number): number => {
-      if (!day.isCompleted) return 0;
-      const weeklyCount = weekWorkoutCounts[weekIndex] || 1;
-      if (weeklyCount <= 1) return 1; // Rich burnt ember
-      if (weeklyCount <= 3) return 2; // Energetic electric orange
-      if (weeklyCount <= 5) return 3; // Radiant amber orange
-      return 4; // Luminous warm gold
-    },
-    [weekWorkoutCounts]
-  );
-
   // Position tooltip safely within viewport bounds
   const updateTooltip = (day: WorkoutDay, target: HTMLElement) => {
     const rect = target.getBoundingClientRect();
-    const tooltipWidth = 190;
+    const tooltipWidth = 200;
     const tooltipHeight = 85;
     const padding = 12;
 
@@ -186,20 +165,21 @@ export const WorkoutHeatmap: React.FC<WorkoutHeatmapProps> = ({
 
   return (
     <section className="heatmap-card" aria-label="Fitness Activity Heatmap">
-      {/* Header with Title and Legend */}
+      {/* Header with Title and Binary Semantics Legend */}
       <div className="heatmap-header">
         <div className="heatmap-title-group">
           <h2 className="heatmap-title">Activity Heatmap</h2>
           <span className="heatmap-subtitle">Consistency over the last 12 months</span>
         </div>
-        <div className="heatmap-legend" aria-hidden="true">
-          <span className="legend-text">Rest</span>
-          <span className="legend-cell level-0" title="Rest day" />
-          <span className="legend-cell level-1" title="1 workout/wk" />
-          <span className="legend-cell level-2" title="2-3 workouts/wk" />
-          <span className="legend-cell level-3" title="4-5 workouts/wk" />
-          <span className="legend-cell level-4" title="6-7 workouts/wk" />
-          <span className="legend-text">Peak</span>
+        <div className="heatmap-legend" aria-label="Heatmap Legend">
+          <div className="legend-item">
+            <span className="legend-swatch inactive" aria-hidden="true" />
+            <span className="legend-text">Rest day</span>
+          </div>
+          <div className="legend-item">
+            <span className="legend-swatch completed" aria-hidden="true" />
+            <span className="legend-text">Workout completed</span>
+          </div>
         </div>
       </div>
 
@@ -242,7 +222,6 @@ export const WorkoutHeatmap: React.FC<WorkoutHeatmapProps> = ({
                         return <div key={dayIdx} className="calendar-cell empty" />;
                       }
 
-                      const level = getDayShadeLevel(day, weekIdx);
                       const isToday = day.date === todayStr;
                       const isSelected = day.date === selectedDate;
                       const isJustToggled = day.date === justToggledDate;
@@ -254,7 +233,7 @@ export const WorkoutHeatmap: React.FC<WorkoutHeatmapProps> = ({
                           role="gridcell"
                           disabled={day.isFuture}
                           tabIndex={day.isFuture ? -1 : 0}
-                          className={`calendar-cell level-${level} ${
+                          className={`calendar-cell ${
                             day.isCompleted ? 'completed' : 'inactive'
                           } ${isToday ? 'today-cell' : ''} ${
                             isSelected ? 'selected-cell' : ''
@@ -270,7 +249,7 @@ export const WorkoutHeatmap: React.FC<WorkoutHeatmapProps> = ({
                           onFocus={e => handleMouseEnter(day, e as unknown as React.MouseEvent<HTMLButtonElement>)}
                           onBlur={handleMouseLeave}
                           aria-label={`${formatFriendlyDate(day.date)}: ${
-                            day.isCompleted ? 'Workout completed' : 'No workout'
+                            day.isCompleted ? 'Workout completed' : 'Rest day'
                           }${isToday ? ' (Today)' : ''}${isSelected ? ' (Selected)' : ''}${
                             day.isFuture ? ' (Future)' : ''
                           }`}
@@ -323,7 +302,7 @@ export const WorkoutHeatmap: React.FC<WorkoutHeatmapProps> = ({
         </button>
       </div>
 
-      {/* Smart Viewport-Clamped Floating Tooltip (Preview on Hover/Focus) */}
+      {/* Smart Viewport-Clamped Floating Tooltip */}
       {tooltip.visible && tooltip.day && (
         <div
           className={`heatmap-tooltip ${
@@ -336,27 +315,44 @@ export const WorkoutHeatmap: React.FC<WorkoutHeatmapProps> = ({
           role="tooltip"
           aria-hidden="true"
         >
-          <div className="tooltip-date">
-            <span className="tooltip-day-badge">
-              {getRelativeDateTitle(tooltip.day.date, todayStr)}
+          {/* Header row: Historical/Today/Future Tag + Full Date */}
+          <div className="tooltip-header-row">
+            <span
+              className={`tooltip-badge ${
+                tooltip.day.date === todayStr
+                  ? 'badge-today'
+                  : tooltip.day.isFuture
+                  ? 'badge-future'
+                  : 'badge-history'
+              }`}
+            >
+              {tooltip.day.date === todayStr
+                ? 'Today'
+                : tooltip.day.isFuture
+                ? 'Future'
+                : 'Historical'}
             </span>
             <span className="tooltip-full-date">
               {formatFriendlyDate(tooltip.day.date)}
             </span>
           </div>
-          <div className="tooltip-status">
+
+          {/* Status row: Workout completed / Rest day */}
+          <div className="tooltip-status-row">
             {tooltip.day.isFuture ? (
               <span className="status-text future">Upcoming day</span>
             ) : tooltip.day.isCompleted ? (
               <span className="status-text completed">
-                <span className="status-dot completed-dot" /> Workout recorded 🔥
+                <span className="status-indicator-dot completed" /> Workout completed
               </span>
             ) : (
               <span className="status-text rest">
-                <span className="status-dot rest-dot" /> No workout logged
+                <span className="status-indicator-dot rest" /> Rest day
               </span>
             )}
           </div>
+
+          {/* Action hint */}
           {!tooltip.day.isFuture && (
             <div className="tooltip-hint">
               {tooltip.day.isCompleted ? 'Click to undo' : 'Click to mark workout'}

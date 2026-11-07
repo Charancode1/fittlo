@@ -1,6 +1,6 @@
 /* ==========================================================================
    Fittlo — Modern Fitness Consistency Tracker
-   Theme: Deep Obsidian & Charcoal, Electric Orange, Warm Amber & Gold
+   Theme: Deep Obsidian & Charcoal, Vibrant Electric Orange & Warm Amber
    ========================================================================== */
 
 :root {
@@ -37,14 +37,9 @@
   --gold-warm: #ffaa00;
   --gold-bright: #ffc107;
 
-  /* Heatmap Color Scale */
+  /* Binary Heatmap Colors */
   --cell-inactive: #151821;
-  --cell-inactive-border: rgba(255, 255, 255, 0.05);
-  --cell-level-1: #c84112; /* Rich burnt ember */
-  --cell-level-2: #ff5722; /* Vibrant electric orange */
-  --cell-level-3: #ff8800; /* Radiant amber orange */
-  --cell-level-4: #ffaa00; /* Luminous warm gold */
-  --cell-level-4-end: #ffc107;
+  --cell-inactive-border: rgba(255, 255, 255, 0.06);
 
   /* Typography */
   --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -248,12 +243,19 @@ button {
   transform: translateY(1px) scale(0.99);
 }
 
-/* Completed State (Rewarding Charcoal & Warm Gold Tone) */
+/* Completed State (Rewarding Charcoal & Warm Amber Tone) */
 .primary-workout-btn.completed {
   background: linear-gradient(135deg, #181c25 0%, #1e2330 100%);
   border: 1px solid rgba(255, 179, 0, 0.4);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 18px rgba(255, 179, 0, 0.15);
   color: var(--text-primary);
+  animation: btn-complete-glow 0.4s ease-out;
+}
+
+@keyframes btn-complete-glow {
+  0% { box-shadow: 0 0 0 0 rgba(255, 179, 0, 0.6); }
+  50% { box-shadow: 0 0 24px rgba(255, 179, 0, 0.4); }
+  100% { box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 0 18px rgba(255, 179, 0, 0.15); }
 }
 
 .primary-workout-btn.completed:hover {
@@ -293,6 +295,29 @@ button {
   background: linear-gradient(135deg, rgba(255, 179, 0, 0.2) 0%, rgba(255, 87, 34, 0.2) 100%);
   color: var(--gold-warm);
   border: 1px solid rgba(255, 179, 0, 0.3);
+}
+
+/* Subtle completion checkmark draw animation */
+@keyframes checkmark-draw {
+  0% {
+    stroke-dashoffset: 24;
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.primary-workout-btn.completed .check-icon {
+  stroke-dasharray: 24;
+  animation: checkmark-draw 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .btn-icon {
@@ -370,25 +395,42 @@ button {
   color: var(--text-secondary);
 }
 
-/* Legend */
+/* Simplified Binary Heatmap Legend */
 .heatmap-legend {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
-  font-size: 0.72rem;
-  color: var(--text-muted);
+  gap: 1.15rem;
+  font-size: 0.74rem;
+  color: var(--text-secondary);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.legend-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 2.5px;
+  display: inline-block;
+}
+
+.legend-swatch.inactive {
+  background-color: var(--cell-inactive);
+  border: 1px solid var(--cell-inactive-border);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.4);
+}
+
+.legend-swatch.completed {
+  background-color: var(--orange-primary);
+  border: 1px solid rgba(255, 110, 64, 0.4);
+  box-shadow: 0 0 8px rgba(255, 87, 34, 0.4);
 }
 
 .legend-text {
-  margin: 0 0.2rem;
   font-weight: 500;
-}
-
-.legend-cell {
-  width: 11px;
-  height: 11px;
-  border-radius: 2.5px;
-  display: inline-block;
 }
 
 /* Heatmap Grid & Scroll Container */
@@ -532,13 +574,6 @@ button {
   z-index: 22;
 }
 
-/* Distinct Selected Cell Ring */
-.calendar-cell.selected-cell {
-  outline: 2px solid #ffffff !important;
-  outline-offset: 1.5px;
-  z-index: 20;
-}
-
 /* Touch hit-box expansion for mobile */
 .calendar-cell::after {
   content: '';
@@ -554,41 +589,18 @@ button {
   visibility: hidden;
 }
 
-/* Inactive Rest Day (Structured Dark Obsidian) */
-.calendar-cell.level-0,
-.legend-cell.level-0 {
+/* Inactive Rest Day (Dark Charcoal) */
+.calendar-cell.inactive {
   background-color: var(--cell-inactive);
   border: 1px solid var(--cell-inactive-border);
-  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.4);
 }
 
-/* Completed Workout Levels (Burnt ember to radiant warm gold) */
-.calendar-cell.level-1,
-.legend-cell.level-1 {
-  background-color: var(--cell-level-1);
-  border: 1px solid rgba(255, 110, 64, 0.3);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-.calendar-cell.level-2,
-.legend-cell.level-2 {
-  background-color: var(--cell-level-2);
-  border: 1px solid rgba(255, 138, 101, 0.35);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 0 8px rgba(255, 87, 34, 0.3);
-}
-
-.calendar-cell.level-3,
-.legend-cell.level-3 {
-  background-color: var(--cell-level-3);
-  border: 1px solid rgba(255, 183, 77, 0.4);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 0 10px rgba(255, 136, 0, 0.45);
-}
-
-.calendar-cell.level-4,
-.legend-cell.level-4 {
-  background: linear-gradient(135deg, var(--cell-level-4) 0%, var(--cell-level-4-end) 100%);
-  border: 1px solid rgba(255, 224, 130, 0.55);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.38), 0 0 14px rgba(255, 179, 0, 0.65);
+/* Completed Workout (Consistent Vibrant Orange) */
+.calendar-cell.completed {
+  background-color: var(--orange-primary);
+  border: 1px solid rgba(255, 110, 64, 0.4);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 0 8px rgba(255, 87, 34, 0.35);
 }
 
 /* Hover & Focus States */
@@ -605,42 +617,44 @@ button {
   transform: scale(0.92);
 }
 
-/* Future Day Styling */
+/* Future Day Styling (Muted and disabled) */
 .calendar-cell.future-cell {
   background-color: rgba(255, 255, 255, 0.015);
-  border: 1px dashed rgba(255, 255, 255, 0.05);
+  border: 1px dashed rgba(255, 255, 255, 0.04);
   cursor: not-allowed;
-  opacity: 0.35;
+  opacity: 0.3;
 }
 
-/* Elegant Today Highlight */
+/* Today Highlight (Distinct orange outline or subtle glow) */
 .calendar-cell.today-cell:not(.completed) {
-  border: 1px solid #ff6b35 !important;
-  box-shadow: 0 0 0 1.5px rgba(255, 107, 53, 0.75), 0 0 10px rgba(255, 107, 53, 0.45);
+  outline: 1.5px solid #ff6b35 !important;
+  outline-offset: 1px;
+  box-shadow: 0 0 12px rgba(255, 107, 53, 0.45);
   animation: pulse-today 2.5s ease-in-out infinite;
 }
 
 .calendar-cell.today-cell.completed {
-  border: 1px solid #ffe082 !important;
-  box-shadow: 0 0 0 1.5px rgba(255, 224, 130, 0.9), 0 0 16px rgba(255, 179, 0, 0.75);
-  animation: pulse-today-gold 3s ease-in-out infinite;
+  outline: 1.5px solid #ffb300 !important;
+  outline-offset: 1px;
+  box-shadow: 0 0 14px rgba(255, 179, 0, 0.6);
+  animation: pulse-today-completed 2.8s ease-in-out infinite;
 }
 
 @keyframes pulse-today {
   0%, 100% {
-    box-shadow: 0 0 0 1.5px rgba(255, 107, 53, 0.75), 0 0 8px rgba(255, 107, 53, 0.35);
+    box-shadow: 0 0 10px rgba(255, 107, 53, 0.35);
   }
   50% {
-    box-shadow: 0 0 0 2px rgba(255, 122, 0, 0.95), 0 0 14px rgba(255, 122, 0, 0.65);
+    box-shadow: 0 0 16px rgba(255, 122, 0, 0.65);
   }
 }
 
-@keyframes pulse-today-gold {
+@keyframes pulse-today-completed {
   0%, 100% {
-    box-shadow: 0 0 0 1.5px rgba(255, 224, 130, 0.9), 0 0 12px rgba(255, 179, 0, 0.55);
+    box-shadow: 0 0 12px rgba(255, 179, 0, 0.5);
   }
   50% {
-    box-shadow: 0 0 0 2px rgba(255, 238, 88, 1), 0 0 18px rgba(255, 179, 0, 0.85);
+    box-shadow: 0 0 18px rgba(255, 179, 0, 0.8);
   }
 }
 
@@ -660,6 +674,14 @@ button {
   border-radius: 50%;
   background-color: #ffffff;
   box-shadow: 0 0 4px #ffffff;
+}
+
+/* Clearly visible selection border */
+.calendar-cell.selected-cell {
+  outline: 2px solid #ffffff !important;
+  outline-offset: 1.5px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.9), 0 0 12px rgba(255, 255, 255, 0.6) !important;
+  z-index: 25;
 }
 
 /* ==========================================================================
@@ -764,10 +786,10 @@ button {
   box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.08);
   pointer-events: none;
   z-index: 1000;
-  min-width: 175px;
+  min-width: 185px;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.4rem;
   animation: tooltip-fade 0.15s ease-out;
 }
 
@@ -784,20 +806,37 @@ button {
   to { opacity: 1; }
 }
 
-.tooltip-date {
+.tooltip-header-row {
   display: flex;
   align-items: center;
   gap: 0.45rem;
 }
 
-.tooltip-day-badge {
-  font-size: 0.68rem;
+.tooltip-badge {
+  font-size: 0.65rem;
   font-weight: 700;
   text-transform: uppercase;
-  background-color: rgba(255, 87, 34, 0.18);
-  color: var(--orange-light);
+  letter-spacing: 0.05em;
   padding: 0.15rem 0.4rem;
   border-radius: 4px;
+}
+
+.tooltip-badge.badge-today {
+  background: rgba(255, 87, 34, 0.2);
+  color: var(--orange-light);
+  border: 1px solid rgba(255, 87, 34, 0.35);
+}
+
+.tooltip-badge.badge-history {
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--text-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tooltip-badge.badge-future {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-muted);
+  border: 1px dashed rgba(255, 255, 255, 0.08);
 }
 
 .tooltip-full-date {
@@ -806,26 +845,26 @@ button {
   font-weight: 600;
 }
 
-.tooltip-status {
+.tooltip-status-row {
   display: flex;
   align-items: center;
-  font-size: 0.74rem;
+  font-size: 0.75rem;
 }
 
-.status-dot {
-  width: 6px;
-  height: 6px;
+.status-indicator-dot {
+  width: 6.5px;
+  height: 6.5px;
   border-radius: 50%;
   display: inline-block;
-  margin-right: 0.4rem;
+  margin-right: 0.45rem;
 }
 
-.completed-dot {
-  background-color: var(--orange-light);
-  box-shadow: 0 0 6px var(--orange-light);
+.status-indicator-dot.completed {
+  background-color: var(--orange-primary);
+  box-shadow: 0 0 6px var(--orange-primary);
 }
 
-.rest-dot {
+.status-indicator-dot.rest {
   background-color: var(--text-muted);
 }
 
