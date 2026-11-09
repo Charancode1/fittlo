@@ -2,54 +2,130 @@
 
 > A simple, beautiful, minimal fitness consistency tracker inspired by GitHub's contribution calendar.
 
-![Fittlo Theme](https://img.shields.io/badge/Theme-Deep%20Charcoal%20%26%20Electric%20Orange-ff5722?style=flat-square)
-![Stack](https://img.shields.io/badge/Stack-React%20%2B%20TypeScript%20%2B%20Vite-61dafb?style=flat-square)
-![Persistence](https://img.shields.io/badge/Storage-localStorage-ff9100?style=flat-square)
+[![Vite](https://img.shields.io/badge/Vite-5.4-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![React](https://img.shields.io/badge/React-18.3-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Theme](https://img.shields.io/badge/Theme-Obsidian%20%26%20Electric%20Orange-ff5722?style=flat-square)](#)
 
 ---
 
-## ✨ Features
+## Overview
 
-- **GitHub-Style Workout Heatmap**: 12-month calendar grid (53 weeks) displaying your workout consistency at a glance.
-- **Electric Fitness Palette**: Deep charcoal and near-black background accented by energetic electric orange, warm amber, and luminous gold completed workout cells.
-- **Single-Click Workout Logging**: Prominent "Mark today's workout" button to log or undo today's workout with immediate visual feedback.
-- **Direct Heatmap Interactivity**: Tap any calendar cell to toggle workout completion for that date.
-- **Minimal Statistics**:
-  - Total workout days
-  - Current workout streak (preserved seamlessly when today is pending)
-  - Longest workout streak
-- **Zero-Friction Persistence**: All workout history is saved instantly to `localStorage` in consistent `YYYY-MM-DD` format.
-- **Responsive & Accessible**: Works across desktop and mobile screens with horizontal scrolling, custom tooltips, keyboard navigation, and ARIA labels.
+**Fittlo** is a personal fitness consistency tracker designed with a single focus: showing your commitment over time without bloated dashboards, complicated routines, or social noise. 
+
+Each day is represented as a square on a 12-month calendar. Mark your workout with a single click, see your streak grow, and build relentless momentum.
 
 ---
 
-## 🚀 Getting Started
+## Features
+
+- **GitHub-Style Contribution Heatmap**: Complete 12-month calendar grid (53 weeks) displaying your workout consistency at a glance.
+- **Binary Workout Semantics**: Uncluttered binary states—rest day (charcoal obsidian) and workout completed (vibrant electric orange).
+- **Single-Click Tracking & Undo**: Primary action button toggles today's workout with immediate state transitions and micro-animations.
+- **Direct Calendar Interactivity**: Click any past date on the heatmap to log or undo historical workouts.
+- **Active Day Inspector**: Pinned footer indicator showing the selected date, workout completion status, and a quick-return shortcut to the current week.
+- **Accurate Streak Engine**:
+  - **Total Workouts**: Deduplicated tally of active days.
+  - **Current Streak**: Seamlessly preserved when today's workout is pending and yesterday was completed.
+  - **Longest Streak**: Evaluates contiguous blocks across month, year, and leap-year boundaries.
+- **Zero-Friction Persistence**: Automatically syncs with `localStorage` in standardized `YYYY-MM-DD` local time format with cross-tab synchronization.
+- **Mobile-First & Accessible**: Touch-expanded hit-boxes, horizontal scroll auto-positioned at today, viewport-clamped tooltips, and full keyboard navigation.
+
+---
+
+## Technology Stack
+
+- **Framework**: React 18
+- **Language**: TypeScript 5.5
+- **Build Tool**: Vite 5.4
+- **Styling**: Pure Modern CSS with custom design tokens (Zero runtime CSS overhead)
+- **Persistence**: Browser `localStorage` API
+- **Fonts**: Plus Jakarta Sans & JetBrains Mono
+
+---
+
+## Getting Started
 
 ### Prerequisites
 
-- Node.js (v18+)
-- npm
+- [Node.js](https://nodejs.org/) (v18 or higher)
+- [npm](https://www.npmjs.com/) (v9 or higher)
 
-### Installation & Run
+### Installation
 
 ```bash
+# Clone the repository
+git clone https://github.com/your-username/fittlo.git
+
+# Navigate to the project directory
+cd fittlo
+
 # Install dependencies
 npm install
-
-# Start local development server
-npm run dev
-
-# Build for production
-npm run build
 ```
+
+### Local Development
+
+```bash
+# Start the Vite local development server
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Production Build
+
+```bash
+# Type-check and compile optimized static assets
+npm run build
+
+# Preview the production build locally
+npm run preview
+```
+
+The production output will be generated in the `dist/` directory.
 
 ---
 
-## 🎨 Color Tokens
+## Deployment Guide
 
-- **Background**: Deep Charcoal (`#0b0c10`, `#13151b`)
-- **Primary Workout Action**: Electric Orange (`#ff5722` / `#ff7a00`)
-- **Completed Cells**: Warm Amber & Gold Spectrum (`#d84315`, `#ff5722`, `#ff8f00`, `#ffb300`)
-- **Inactive Cells**: Subtle Slate Gray (`#1a1d27`)
-- **Typography**: Crisp Off-White (`#f5f6f8`) and Muted Gray (`#9499a8`)
+Fittlo is a static Single Page Application (SPA). It can be deployed to any modern static hosting service with zero configuration.
 
+### Deploying to Vercel
+
+1. Push your repository to GitHub / GitLab / Bitbucket.
+2. Sign in to [Vercel](https://vercel.com/) and click **"Add New Project"**.
+3. Import your `fittlo` repository.
+4. Vercel automatically detects the Vite configuration:
+   - **Framework Preset**: `Vite`
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
+5. Click **"Deploy"**.
+
+*(A `vercel.json` rewrite configuration is pre-configured in this repository).*
+
+### Deploying to Netlify
+
+1. Sign in to [Netlify](https://www.netlify.com/) and click **"Add new site" > "Import an existing project"**.
+2. Connect your Git provider and select `fittlo`.
+3. Set the build settings:
+   - **Base directory**: Leave blank
+   - **Build command**: `npm run build`
+   - **Publish directory**: `dist`
+4. Click **"Deploy site"**.
+
+*(A `netlify.toml` redirect configuration is pre-configured in this repository).*
+
+---
+
+## Architecture & Data Safety
+
+- **Local-Only Storage**: All workout data is stored locally on your device under key `fittlo_workout_history`.
+- **No Cloud Tracking**: Zero third-party trackers, zero cookies, zero analytics.
+- **Timezone Resilience**: All dates are evaluated at noon local time to prevent Daylight Saving Time shifts and midnight boundary errors.
+
+---
+
+## License
+
+MIT License. Free and open source.

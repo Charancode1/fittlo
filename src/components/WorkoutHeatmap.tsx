@@ -31,6 +31,7 @@ export const WorkoutHeatmap: React.FC<WorkoutHeatmapProps> = ({
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [justToggledDate, setJustToggledDate] = useState<string | null>(null);
+  const toggleTimeoutRef = useRef<number | null>(null);
   const [tooltip, setTooltip] = useState<TooltipState>({
     visible: false,
     x: 0,
@@ -38,6 +39,15 @@ export const WorkoutHeatmap: React.FC<WorkoutHeatmapProps> = ({
     placement: 'top',
     day: null
   });
+
+  // Clean up any pending feedback animation timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (toggleTimeoutRef.current !== null) {
+        window.clearTimeout(toggleTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Automatically position calendar at the most recent week on mount
   useEffect(() => {
@@ -114,9 +124,13 @@ export const WorkoutHeatmap: React.FC<WorkoutHeatmapProps> = ({
     onToggleDate(day.date);
 
     // Trigger subtle tactile feedback animation
+    if (toggleTimeoutRef.current !== null) {
+      window.clearTimeout(toggleTimeoutRef.current);
+    }
     setJustToggledDate(day.date);
-    setTimeout(() => {
+    toggleTimeoutRef.current = window.setTimeout(() => {
       setJustToggledDate(curr => (curr === day.date ? null : curr));
+      toggleTimeoutRef.current = null;
     }, 300);
 
     // Update tooltip preview if currently visible

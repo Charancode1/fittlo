@@ -19,6 +19,7 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats }) => {
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
+            aria-hidden="true"
           >
             <path d="M18 20V10" />
             <path d="M12 20V4" />
@@ -38,6 +39,7 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats }) => {
             className="stat-icon flame-icon"
             viewBox="0 0 24 24"
             fill="currentColor"
+            aria-hidden="true"
           >
             <path d="M12 2c-.67 1.83-2.5 3.5-3.5 5.5-1.5 3-1 6.5 1.5 8.5 1 1 2 1.5 2 3 .5-.5 1-1.5 1-2.5 0-2.5-3-3.5-2-6 .5-1.5 1.8-2.7 2.5-4 1.5 2.5 3.5 4.5 3.5 8 0 4-3.5 6.5-6.5 6.5-4 0-7-3-7-7 0-3 2-6 5.5-8.5.5-.35 1.5-.9 1.5-1.5-.7.1-1.4.3-2 .5z" />
           </svg>
@@ -59,6 +61,7 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats }) => {
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
+            aria-hidden="true"
           >
             <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
             <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />

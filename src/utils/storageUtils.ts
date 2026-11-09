@@ -31,7 +31,15 @@ export function getStoredWorkouts(): string[] {
  */
 export function setStoredWorkouts(dates: string[]): void {
   try {
-    const unique = Array.from(new Set(dates));
+    const validRegex = /^\d{4}-\d{2}-\d{2}$/;
+    const unique = Array.from(
+      new Set(
+        dates.filter(
+          (item): item is string =>
+            typeof item === 'string' && validRegex.test(item)
+        )
+      )
+    );
     localStorage.setItem(STORAGE_KEY, JSON.stringify(unique));
   } catch (err) {
     console.error('Failed to save workouts to localStorage:', err);

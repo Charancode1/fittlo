@@ -18,6 +18,29 @@ export function App() {
     setStoredWorkouts(workouts);
   }, [workouts]);
 
+  // Synchronize state across browser tabs in real-time
+  useEffect(() => {
+    const handleStorageEvent = (e: StorageEvent) => {
+      if (e.key === 'fittlo_workout_history' && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed)) {
+            const valid = parsed.filter(
+              (item): item is string =>
+                typeof item === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(item)
+            );
+            setWorkouts(Array.from(new Set(valid)));
+          }
+        } catch {
+          // Ignore parse errors from external sources
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageEvent);
+    return () => window.removeEventListener('storage', handleStorageEvent);
+  }, []);
+
   // Today reference using user's local calendar
   const todayStr = useMemo(() => formatLocalDate(new Date()), []);
   const todayFormatted = useMemo(() => formatFriendlyDate(todayStr), [todayStr]);
